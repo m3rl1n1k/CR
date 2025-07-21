@@ -1,3 +1,6 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Table,
@@ -8,12 +11,26 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { problems } from "@/lib/data";
+import { problems as staticProblems, Problem } from "@/lib/data";
 import { DatePickerWithRange } from "@/components/date-picker-with-range";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProblemsPage() {
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate fetching data
+    const timer = setTimeout(() => {
+      setProblems(staticProblems);
+      setLoading(false);
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
@@ -45,26 +62,38 @@ export default function ProblemsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {problems.map((problem) => (
-                  <TableRow key={problem.id}>
-                    <TableCell>{problem.date}</TableCell>
-                    <TableCell>{problem.line}</TableCell>
-                    <TableCell>{problem.machine}</TableCell>
-                    <TableCell className="max-w-xs truncate">{problem.description}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          problem.priority === "High"
-                            ? "destructive"
-                            : problem.priority === "Medium"
-                            ? "secondary"
-                            : "outline"
-                        }
-                      >
-                        {problem.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[250px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  problems.map((problem) => (
+                    <TableRow key={problem.id}>
+                      <TableCell>{problem.date}</TableCell>
+                      <TableCell>{problem.line}</TableCell>
+                      <TableCell>{problem.machine}</TableCell>
+                      <TableCell className="max-w-xs truncate">{problem.description}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            problem.priority === "High"
+                              ? "destructive"
+                              : problem.priority === "Medium"
+                              ? "secondary"
+                              : "outline"
+                          }
+                        >
+                          {problem.priority}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                        <span className={cn("flex items-center gap-2", {
                          "text-green-600": problem.status === "Resolved",
                          "text-yellow-600": problem.status === "In Progress",
@@ -73,9 +102,10 @@ export default function ProblemsPage() {
                         <span className="h-2 w-2 rounded-full bg-current" />
                          {problem.status}
                        </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
