@@ -1,5 +1,6 @@
 'use client'
 
+import React from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,18 +23,25 @@ import { productionLines, users } from "@/lib/data";
 import { DatePickerDemo } from "@/components/date-picker-demo";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function NewShiftPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        toast({
-            title: "Shift Created Successfully",
-            description: "The new production shift has been scheduled.",
-        });
-        router.push("/");
+        setIsSubmitting(true);
+        // Simulate an API call
+        setTimeout(() => {
+            toast({
+                title: "Shift Created Successfully",
+                description: "The new production shift has been scheduled.",
+            });
+            router.push("/");
+            // No need to set isSubmitting to false as we are navigating away
+        }, 1500);
     }
 
   return (
@@ -88,8 +96,13 @@ export default function NewShiftPage() {
                     <Input id="work-card" placeholder="e.g., WC-2024-07-453" />
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Create Shift
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                    </>
+                  ) : "Create Shift" }
                 </Button>
               </form>
             </CardContent>
