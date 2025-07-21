@@ -10,6 +10,7 @@ import {
     Clock,
     Settings,
     LayoutDashboard,
+    Package,
 } from 'lucide-react';
 import {
     Sidebar,
@@ -30,6 +31,7 @@ import { Separator } from '@/components/ui/separator';
 
 const navItems = [
     { href: '/', label: 'Overview', icon: LayoutDashboard },
+    { href: '/products', label: 'Products', icon: Package },
     { href: '/problems', label: 'Problems', icon: TriangleAlert },
 ];
 

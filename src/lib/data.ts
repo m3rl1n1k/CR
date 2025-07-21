@@ -48,6 +48,13 @@ export interface User {
     role: "Supervisor" | "Operator";
 }
 
+export interface Product {
+  id: string;
+  title: string;
+  code: string;
+  productionLine: string;
+}
+
 
 export const productionLines: ProductionLine[] = [
   {
@@ -209,3 +216,11 @@ export const users: User[] = [
     { id: 'u-4', name: 'Michael Brown', role: 'Supervisor' },
     { id: 'u-5', name: 'Chris Green', role: 'Operator' },
 ]
+
+export const products: Product[] = [
+    { id: 'prod-001', title: 'Widget Pro', code: 'WPRO-001', productionLine: 'Assembly Line 1' },
+    { id: 'prod-002', title: 'Gadget Plus', code: 'GPLUS-002', productionLine: 'Assembly Line 2' },
+    { id: 'prod-003', title: 'Thingamajig', code: 'THING-003', productionLine: 'Packaging Line A' },
+    { id: 'prod-004', title: 'Doohickey Max', code: 'DOOMAX-004', productionLine: 'Finishing Line X' },
+    { id: 'prod-005', title: 'SuperSprocket', code: 'SPROCK-99', productionLine: 'Assembly Line 1' },
+];
