@@ -4,7 +4,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,22 +14,68 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { shifts, problems as allProblems } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertCircle, Package, Calendar, Users, Target, CheckCircle } from "lucide-react";
+import { PlusCircle, AlertCircle, Package, Calendar, Users, CheckCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getShift, getProblems } from "@/lib/api";
+import { Problem, Shift } from "@/lib/data";
+import { format } from "date-fns";
 
-export default function ShiftDetailsPage({ params }: { params: { id: string } }) {
-  const shift = shifts.find((s) => s.id === params.id);
+async function getData(shiftId: string): Promise<{shift: Shift | null, problems: Problem[]}> {
+    try {
+        const shiftPromise = getShift(shiftId);
+        const problemsPromise = getProblems(); // API doesn't support filtering problems by shift
+
+        const [shift, allProblems] = await Promise.all([shiftPromise, problemsPromise]);
+        
+        // Mocking data not available in API for a richer UI
+        const enrichedShift = shift ? {
+            ...shift,
+            id: shiftId,
+            name: `Shift ${shiftId}`,
+            line: shift.productionLine?.split('/').pop() || `Line ${shiftId}`,
+            date: format(new Date(), 'yyyy-MM-dd'),
+            supervisor: "Jane Doe",
+            status: 'In Progress' as const,
+            workCard: {
+                id: `wc-${shiftId}`,
+                productName: 'Widget Pro',
+                productCode: 'WPRO-001',
+                target: 5000,
+                produced: 3250
+            }
+        } : null;
+
+        // Since we can't filter by shiftId from the API, we will just show a few recent problems.
+        const problems = allProblems.slice(0, 5).map(p => ({
+            ...p,
+            id: p.id,
+            date: p.createdAt ? format(new Date(p.createdAt), 'yyyy-MM-dd') : 'N/A',
+            line: p.productionLine?.split('/').pop() || 'N/A',
+            machine: 'Unknown',
+            description: p.comment || 'No description',
+            priority: 'Medium' as const,
+            status: p.status as Problem['status'] || 'Open',
+            shiftId: shiftId
+        }));
+        
+        return { shift: enrichedShift, problems };
+
+    } catch (error) {
+        console.error("Failed to fetch shift details:", error);
+        return { shift: null, problems: [] };
+    }
+}
+
+
+export default async function ShiftDetailsPage({ params }: { params: { id: string } }) {
+  const { shift, problems: shiftProblems } = await getData(params.id);
   
   if (!shift) {
     notFound();
   }
-
-  const shiftProblems = allProblems.filter(p => p.shiftId === shift.id);
 
   return (
     <DashboardLayout>

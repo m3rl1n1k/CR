@@ -19,20 +19,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { productionLines, users } from "@/lib/data";
 import { DatePickerDemo } from "@/components/date-picker-demo";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { getProductionLines, getUsers } from "@/lib/api";
+import { ProductionLine, User } from "@/lib/data";
 
 export default function NewShiftPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [productionLines, setProductionLines] = React.useState<ProductionLine[]>([]);
+    const [users, setUsers] = React.useState<User[]>([]);
+
+    React.useEffect(() => {
+      async function fetchData() {
+        try {
+          const [lines, fetchedUsers] = await Promise.all([getProductionLines(), getUsers()]);
+          setProductionLines(lines);
+          setUsers(fetchedUsers.map(u => ({...u, id: u.personalNumber || '', role: 'Supervisor'})));
+        } catch (error) {
+          console.error("Failed to fetch initial data", error);
+          toast({
+            title: "Error",
+            description: "Failed to load data for new shift form.",
+            variant: "destructive"
+          })
+        }
+      }
+      fetchData();
+    }, [toast]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        // Here you would typically call an API to create the shift
+        // e.g. createShift(formData);
+        
         // Simulate an API call
         setTimeout(() => {
             toast({
@@ -40,7 +64,6 @@ export default function NewShiftPage() {
                 description: "The new production shift has been scheduled.",
             });
             router.push("/");
-            // No need to set isSubmitting to false as we are navigating away
         }, 1500);
     }
 
@@ -65,8 +88,8 @@ export default function NewShiftPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {productionLines.map((line) => (
-                        <SelectItem key={line.id} value={line.id}>
-                          {line.name}
+                        <SelectItem key={line.lineCode} value={line.lineCode!}>
+                          {line.lineName}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -10,24 +10,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { products as staticProducts, Product } from "@/lib/data";
+import { Product } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Skeleton } from '@/components/ui/skeleton';
+import { getProducts } from '@/lib/api';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching data
-    const timer = setTimeout(() => {
-      setProducts(staticProducts);
-      setLoading(false);
-    }, 1000); // 1 second delay
-
-    return () => clearTimeout(timer);
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts.map(p => ({
+            ...p,
+            productionLine: p.productionLine || 'N/A'
+        })));
+      } catch (error) {
+        console.error("Failed to fetch products", error);
+        // You could add toast notifications here
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
   return (

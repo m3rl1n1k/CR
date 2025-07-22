@@ -1,15 +1,36 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProductionLineCard } from "@/components/production-line-card";
-import { productionLines } from "@/lib/data";
+import { ProductionLine } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Activity, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getProductionLines } from "@/lib/api";
 
-export default function Home() {
+async function getLines() {
+  const lines = await getProductionLines();
+  // The API doesn't provide all the fields the card component needs.
+  // We'll add some placeholder data.
+  return lines.map((line, index) => ({
+    ...line,
+    id: line.lineCode || `line-${index}`,
+    name: line.lineName || 'Unnamed Line',
+    status: "Running", // Placeholder
+    oee: Math.floor(Math.random() * (95 - 75 + 1) + 75), // Placeholder
+    currentProduct: "Widget Pro", // Placeholder
+    shiftProgress: Math.floor(Math.random() * (90 - 40 + 1) + 40), // Placeholder
+    alerts: Math.floor(Math.random() * 5), // Placeholder
+    currentShiftId: `shift-${index}` // Placeholder
+  })) as ProductionLine[];
+}
+
+
+export default async function Home() {
+  const productionLines = await getLines();
+
   const overallOEE = (
     productionLines.reduce((acc, line) => acc + line.oee, 0) /
-    productionLines.length
+    (productionLines.length || 1)
   ).toFixed(1);
 
   const activeShifts = productionLines.filter(

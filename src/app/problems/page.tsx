@@ -11,24 +11,43 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { problems as staticProblems, Problem } from "@/lib/data";
+import { Problem } from "@/lib/data";
 import { DatePickerWithRange } from "@/components/date-picker-with-range";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Skeleton } from '@/components/ui/skeleton';
+import { getProblems } from '@/lib/api';
+import { format } from 'date-fns';
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching data
-    const timer = setTimeout(() => {
-      setProblems(staticProblems);
-      setLoading(false);
-    }, 1000); // 1 second delay
-
-    return () => clearTimeout(timer);
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const fetchedProblems = await getProblems();
+        const formattedProblems = fetchedProblems.map(p => ({
+            ...p,
+            id: p.id,
+            date: p.createdAt ? format(new Date(p.createdAt), 'yyyy-MM-dd') : 'N/A',
+            line: p.productionLine?.split('/').pop() || 'N/A',
+            machine: 'Unknown', // Not in API
+            description: p.comment || 'No description',
+            priority: 'Medium', // Not in API
+            status: p.status as Problem['status'] || 'Open',
+            shiftId: 'N/A', // Not in API
+        }));
+        setProblems(formattedProblems);
+      } catch (error) {
+        console.error("Failed to fetch problems", error);
+        // Handle error, maybe show a toast
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
   return (
