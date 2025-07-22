@@ -23,7 +23,7 @@ import { DatePickerDemo } from "@/components/date-picker-demo";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { getProductionLines, getUsers } from "@/lib/api";
+import { createShift, getProductionLines, getUsers } from "@/lib/api";
 import { ProductionLine, User } from "@/lib/data";
 
 export default function NewShiftPage() {
@@ -32,6 +32,7 @@ export default function NewShiftPage() {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [productionLines, setProductionLines] = React.useState<ProductionLine[]>([]);
     const [users, setUsers] = React.useState<User[]>([]);
+    const [selectedLine, setSelectedLine] = React.useState<string>("");
 
     React.useEffect(() => {
       async function fetchData() {
@@ -51,20 +52,43 @@ export default function NewShiftPage() {
       fetchData();
     }, [toast]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        // Here you would typically call an API to create the shift
-        // e.g. createShift(formData);
-        
-        // Simulate an API call
-        setTimeout(() => {
+        if (!selectedLine) {
             toast({
-                title: "Shift Created Successfully",
-                description: "The new production shift has been scheduled.",
+                title: "Error",
+                description: "Please select a production line.",
+                variant: "destructive"
             });
-            router.push("/");
-        }, 1500);
+            return;
+        }
+        setIsSubmitting(true);
+        
+        try {
+            const newShift = await createShift({ productionLine: `/production_lines/${selectedLine}`, problem: null });
+
+            if (newShift) {
+                 toast({
+                    title: "Shift Created Successfully",
+                    description: "The new production shift has been scheduled.",
+                });
+                router.push(`/shifts/${newShift.id}`);
+            } else {
+                 toast({
+                    title: "Error",
+                    description: "Could not create a new shift. Please try again.",
+                    variant: "destructive"
+                });
+                setIsSubmitting(false);
+            }
+        } catch (error) {
+             toast({
+                title: "Error",
+                description: "An unexpected error occurred while creating the shift.",
+                variant: "destructive"
+            });
+            setIsSubmitting(false);
+        }
     }
 
   return (
@@ -82,7 +106,7 @@ export default function NewShiftPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="production-line">Production Line</Label>
-                  <Select>
+                  <Select onValueChange={setSelectedLine} value={selectedLine}>
                     <SelectTrigger id="production-line">
                       <SelectValue placeholder="Select a production line" />
                     </SelectTrigger>
@@ -98,7 +122,7 @@ export default function NewShiftPage() {
                 <div className="space-y-2">
                   <Label htmlFor="supervisor">Supervisor</Label>
                   <Select>
-                    <SelectTrigger id="supervisor">
+                    <SelectTrigger id="supervisor" disabled>
                       <SelectValue placeholder="Select a supervisor" />
                     </SelectTrigger>
                     <SelectContent>
@@ -116,7 +140,7 @@ export default function NewShiftPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="work-card">Work Card ID</Label>
-                    <Input id="work-card" placeholder="e.g., WC-2024-07-453" />
+                    <Input id="work-card" placeholder="e.g., WC-2024-07-453" disabled/>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>

@@ -13,7 +13,7 @@ import {
 import { Product } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Frown, PlusCircle } from "lucide-react";
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProducts } from '@/lib/api';
 
@@ -28,6 +28,7 @@ export default function ProductsPage() {
         const fetchedProducts = await getProducts();
         setProducts(fetchedProducts.map(p => ({
             ...p,
+            id: p.id!,
             productionLine: p.productionLine || 'N/A'
         })));
       } catch (error) {
@@ -78,14 +79,26 @@ export default function ProductsPage() {
                       <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
                     </TableRow>
                   ))
-                ) : (
+                ) : products.length > 0 ? (
                   products.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">{product.title}</TableCell>
                       <TableCell>{product.code}</TableCell>
-                      <TableCell>{product.productionLine}</TableCell>
+                      <TableCell>{product.productionLine?.split('/').pop() || 'N/A'}</TableCell>
                     </TableRow>
                   ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
+                       <div className="flex flex-col items-center justify-center gap-2">
+                          <Frown className="w-8 h-8 text-muted-foreground" />
+                          <p className="font-semibold text-muted-foreground">No products found.</p>
+                          <p className="text-sm text-muted-foreground">
+                            Either no products exist or the data could not be loaded.
+                          </p>
+                       </div>
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>

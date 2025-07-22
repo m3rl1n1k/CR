@@ -8,48 +8,70 @@ interface HydraCollection<T> {
   // Add other hydra fields if needed
 }
 
-async function fetchFromApi<T>(endpoint: string): Promise<T> {
+async function fetchFromApi<T>(endpoint: string, emptyState: T): Promise<T> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Accept': 'application/ld+json',
       },
+      cache: 'no-store', // Disable caching for server-side fetches
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed with status ${response.status}`);
+      console.error(`API call to ${endpoint} failed with status ${response.status}`);
+      return emptyState;
     }
     const data = await response.json();
     return data;
   } catch (error) {
     console.error(`Failed to fetch from ${endpoint}`, error);
-    throw error;
+    return emptyState;
   }
 }
 
 export async function getProductionLines(): Promise<ProductionLine[]> {
-    const data = await fetchFromApi<HydraCollection<ProductionLine>>('/production_lines');
+    const data = await fetchFromApi<HydraCollection<ProductionLine>>('/production_lines', { 'hydra:member': [], 'hydra:totalItems': 0 });
     return data['hydra:member'];
 }
 
 export async function getProducts(): Promise<Product[]> {
-    const data = await fetchFromApi<HydraCollection<Product>>('/products');
+    const data = await fetchFromApi<HydraCollection<Product>>('/products', { 'hydra:member': [], 'hydra:totalItems': 0 });
     return data['hydra:member'];
 }
 
 export async function getProblems(): Promise<Problem[]> {
-    const data = await fetchFromApi<HydraCollection<Problem>>('/problems');
+    const data = await fetchFromApi<HydraCollection<Problem>>('/problems', { 'hydra:member': [], 'hydra:totalItems': 0 });
     return data['hydra:member'];
 }
 
 export async function getUsers(): Promise<User[]> {
-    const data = await fetchFromApi<HydraCollection<User>>('/users');
+    const data = await fetchFromApi<HydraCollection<User>>('/users', { 'hydra:member': [], 'hydra:totalItems': 0 });
     return data['hydra:member'];
 }
 
-export async function getShift(id: string): Promise<Shift> {
-    const data = await fetchFromApi<Shift>(`/shifts/${id}`);
+export async function getShift(id: string): Promise<Shift | null> {
+    const data = await fetchFromApi<Shift | null>(`/shifts/${id}`, null);
     return data;
 }
 
-// Add other API functions (POST, PATCH, DELETE) as needed
+export async function createShift(shiftData: { productionLine: string; problem: string | null }): Promise<Shift | null> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/shifts`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/ld+json',
+            },
+            body: JSON.stringify(shiftData),
+        });
+
+        if (!response.ok) {
+            console.error('Failed to create shift', await response.text());
+            return null;
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Error creating shift:', error);
+        return null;
+    }
+}

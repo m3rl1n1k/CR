@@ -2,12 +2,12 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProductionLineCard } from "@/components/production-line-card";
 import { ProductionLine } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Activity, AlertTriangle } from 'lucide-react';
+import { BarChart, Activity, AlertTriangle, Frown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getProductionLines } from "@/lib/api";
 
-async function getLines() {
+async function getLines(): Promise<ProductionLine[]> {
   const lines = await getProductionLines();
   // The API doesn't provide all the fields the card component needs.
   // We'll add some placeholder data.
@@ -21,7 +21,7 @@ async function getLines() {
     shiftProgress: Math.floor(Math.random() * (90 - 40 + 1) + 40), // Placeholder
     alerts: Math.floor(Math.random() * 5), // Placeholder
     currentShiftId: `shift-${index}` // Placeholder
-  })) as ProductionLine[];
+  }));
 }
 
 
@@ -99,11 +99,25 @@ export default async function Home() {
         </div>
         <div className="space-y-4">
             <h2 className="text-2xl font-bold tracking-tight">Production Lines</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {productionLines.map((line) => (
-                <ProductionLineCard key={line.id} line={line} />
-            ))}
-            </div>
+            {productionLines.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {productionLines.map((line) => (
+                    <ProductionLineCard key={line.id} line={line} />
+                ))}
+                </div>
+            ) : (
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center gap-4 p-8">
+                        <Frown className="w-16 h-16 text-muted-foreground" />
+                        <p className="text-lg font-semibold text-muted-foreground">Could not load production lines.</p>
+                        <p className="text-sm text-center text-muted-foreground">
+                            There was an issue connecting to the production data server.
+                            <br/>
+                            Please check the connection or try again later.
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
         </div>
       </div>
     </DashboardLayout>

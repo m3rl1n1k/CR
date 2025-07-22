@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProblems } from '@/lib/api';
 import { format } from 'date-fns';
+import { Frown } from 'lucide-react';
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
@@ -30,7 +31,7 @@ export default function ProblemsPage() {
         const fetchedProblems = await getProblems();
         const formattedProblems = fetchedProblems.map(p => ({
             ...p,
-            id: p.id,
+            id: p.id!,
             date: p.createdAt ? format(new Date(p.createdAt), 'yyyy-MM-dd') : 'N/A',
             line: p.productionLine?.split('/').pop() || 'N/A',
             machine: 'Unknown', // Not in API
@@ -92,7 +93,7 @@ export default function ProblemsPage() {
                       <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                     </TableRow>
                   ))
-                ) : (
+                ) : problems.length > 0 ? (
                   problems.map((problem) => (
                     <TableRow key={problem.id}>
                       <TableCell>{problem.date}</TableCell>
@@ -124,6 +125,18 @@ export default function ProblemsPage() {
                       </TableCell>
                     </TableRow>
                   ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                       <div className="flex flex-col items-center justify-center gap-2">
+                          <Frown className="w-8 h-8 text-muted-foreground" />
+                          <p className="font-semibold text-muted-foreground">No problems found.</p>
+                          <p className="text-sm text-muted-foreground">
+                            Either no problems have been reported or the data could not be loaded.
+                          </p>
+                       </div>
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>
