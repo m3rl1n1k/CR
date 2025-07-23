@@ -35,7 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useTranslation, TranslationProvider } from '@/hooks/use-translation';
+import { useTranslation } from '@/hooks/use-translation';
 
 const navItems = [
     { href: '/', labelKey: 'overview', icon: LayoutDashboard },
@@ -62,7 +62,7 @@ function LanguageSwitcher() {
 }
 
 
-function InnerDashboardLayout({ children }: { children: React.ReactNode }) {
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { t } = useTranslation();
 
@@ -126,12 +126,4 @@ function InnerDashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarInset>
         </SidebarProvider>
     );
-}
-
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <TranslationProvider>
-            <InnerDashboardLayout>{children}</InnerDashboardLayout>
-        </TranslationProvider>
-    )
 }
