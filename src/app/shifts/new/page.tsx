@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createShift, getProductionLines, getUsers } from "@/lib/api";
 import { ProductionLine, User } from "@/lib/data";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function NewShiftPage() {
     const { toast } = useToast();
@@ -33,6 +34,7 @@ export default function NewShiftPage() {
     const [productionLines, setProductionLines] = React.useState<ProductionLine[]>([]);
     const [users, setUsers] = React.useState<User[]>([]);
     const [selectedLine, setSelectedLine] = React.useState<string>("");
+    const { t } = useTranslation();
 
     React.useEffect(() => {
       async function fetchData() {
@@ -43,21 +45,21 @@ export default function NewShiftPage() {
         } catch (error) {
           console.error("Failed to fetch initial data", error);
           toast({
-            title: "Error",
-            description: "Failed to load data for new shift form.",
+            title: t('error'),
+            description: t('fetch_data_error'),
             variant: "destructive"
           })
         }
       }
       fetchData();
-    }, [toast]);
+    }, [toast, t]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedLine) {
             toast({
-                title: "Error",
-                description: "Please select a production line.",
+                title: t('error'),
+                description: t('select_production_line_error'),
                 variant: "destructive"
             });
             return;
@@ -69,22 +71,22 @@ export default function NewShiftPage() {
 
             if (newShift) {
                  toast({
-                    title: "Shift Created Successfully",
-                    description: "The new production shift has been scheduled.",
+                    title: t('shift_created_success'),
+                    description: t('shift_created_success_desc'),
                 });
                 router.push(`/shifts/${newShift.id}`);
             } else {
                  toast({
-                    title: "Error",
-                    description: "Could not create a new shift. Please try again.",
+                    title: t('error'),
+                    description: t('create_shift_error'),
                     variant: "destructive"
                 });
                 setIsSubmitting(false);
             }
         } catch (error) {
              toast({
-                title: "Error",
-                description: "An unexpected error occurred while creating the shift.",
+                title: t('error'),
+                description: t('create_shift_unexpected_error'),
                 variant: "destructive"
             });
             setIsSubmitting(false);
@@ -97,18 +99,18 @@ export default function NewShiftPage() {
         <div className="max-w-2xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Create New Shift</CardTitle>
+              <CardTitle className="text-2xl">{t('create_new_shift')}</CardTitle>
               <CardDescription>
-                Fill in the details to schedule a new production shift.
+                {t('create_new_shift_desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="production-line">Production Line</Label>
+                  <Label htmlFor="production-line">{t('production_line')}</Label>
                   <Select onValueChange={setSelectedLine} value={selectedLine}>
                     <SelectTrigger id="production-line">
-                      <SelectValue placeholder="Select a production line" />
+                      <SelectValue placeholder={t('select_production_line_placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {productionLines.map((line) => (
@@ -120,10 +122,10 @@ export default function NewShiftPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="supervisor">Supervisor</Label>
+                  <Label htmlFor="supervisor">{t('supervisor')}</Label>
                   <Select>
                     <SelectTrigger id="supervisor" disabled>
-                      <SelectValue placeholder="Select a supervisor" />
+                      <SelectValue placeholder={t('select_supervisor_placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {users.map((user) => (
@@ -135,11 +137,11 @@ export default function NewShiftPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                    <Label>Shift Date</Label>
+                    <Label>{t('shift_date')}</Label>
                     <DatePickerDemo />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="work-card">Work Card ID</Label>
+                    <Label htmlFor="work-card">{t('work_card_id')}</Label>
                     <Input id="work-card" placeholder="e.g., WC-2024-07-453" disabled/>
                 </div>
 
@@ -147,9 +149,9 @@ export default function NewShiftPage() {
                   {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
+                        {t('creating')}...
                     </>
-                  ) : "Create Shift" }
+                  ) : t('create_shift') }
                 </Button>
               </form>
             </CardContent>

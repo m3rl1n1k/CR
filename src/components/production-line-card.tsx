@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import {
   Card,
@@ -12,24 +14,26 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ProductionLine } from "@/lib/data";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface ProductionLineCardProps {
   line: ProductionLine;
 }
 
 export function ProductionLineCard({ line }: ProductionLineCardProps) {
+  const { t } = useTranslation();
   const statusConfig = {
     Running: {
       color: "bg-green-500",
-      text: "Running",
+      text: t('running'),
     },
     Idle: {
       color: "bg-yellow-500",
-      text: "Idle",
+      text: t('idle'),
     },
     Stopped: {
       color: "bg-red-500",
-      text: "Stopped",
+      text: t('stopped'),
     },
   };
 
@@ -53,14 +57,14 @@ export function ProductionLineCard({ line }: ProductionLineCardProps) {
       <CardContent className="flex-grow">
         <div className="space-y-2">
           <div>
-            <h4 className="text-sm font-medium">Current Product</h4>
+            <h4 className="text-sm font-medium">{t('current_product')}</h4>
             <p className="text-sm text-muted-foreground">
               {line.currentProduct}
             </p>
           </div>
           <div>
             <div className="flex justify-between text-sm">
-                <span className="font-medium">Shift Progress</span>
+                <span className="font-medium">{t('shift_progress')}</span>
                 <span className="text-muted-foreground">{line.shiftProgress}%</span>
             </div>
             <Progress value={line.shiftProgress} className="h-2 mt-1" />
@@ -70,7 +74,7 @@ export function ProductionLineCard({ line }: ProductionLineCardProps) {
       <CardFooter>
         <Link href={`/shifts/${line.currentShiftId}`} className="w-full">
           <Button variant="outline" className="w-full">
-            View Shift Details
+            {t('view_shift_details')}
           </Button>
         </Link>
       </CardFooter>

@@ -11,6 +11,7 @@ import {
     Settings,
     LayoutDashboard,
     Package,
+    Globe,
 } from 'lucide-react';
 import {
     Sidebar,
@@ -28,16 +29,42 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Icons } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useTranslation, TranslationProvider } from '@/hooks/use-translation';
 
 const navItems = [
-    { href: '/', label: 'Overview', icon: LayoutDashboard },
-    { href: '/products', label: 'Products', icon: Package },
-    { href: '/problems', label: 'Problems', icon: TriangleAlert },
+    { href: '/', labelKey: 'overview', icon: LayoutDashboard },
+    { href: '/products', labelKey: 'products', icon: Package },
+    { href: '/problems', labelKey: 'problems', icon: TriangleAlert },
 ];
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+function LanguageSwitcher() {
+    const { setLanguage } = useTranslation();
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Globe className="size-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setLanguage('en')}>English</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('pl')}>Polski</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('uk')}>Українська</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
+
+function InnerDashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isMobile = useIsMobile();
+    const { t } = useTranslation();
 
     return (
         <SidebarProvider>
@@ -45,7 +72,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <SidebarHeader>
                     <div className="flex items-center gap-2">
                         <Icons.logo className="size-8 text-primary" />
-                        <span className="text-lg font-semibold">Production Insights</span>
+                        <span className="text-lg font-semibold">{t('title')}</span>
                     </div>
                 </SidebarHeader>
                 <SidebarContent>
@@ -55,11 +82,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                                 <Link href={item.href} legacyBehavior passHref>
                                     <SidebarMenuButton
                                         isActive={pathname === item.href}
-                                        tooltip={item.label}
+                                        tooltip={t(item.labelKey)}
                                         className="justify-start"
                                     >
                                         <item.icon className="size-4" />
-                                        <span>{item.label}</span>
+                                        <span>{t(item.labelKey)}</span>
                                     </SidebarMenuButton>
                                 </Link>
                             </SidebarMenuItem>
@@ -75,11 +102,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         </Avatar>
                         <div className="flex flex-col">
                             <span className="font-semibold text-sm">Jane Doe</span>
-                            <span className="text-xs text-muted-foreground">Supervisor</span>
+                            <span className="text-xs text-muted-foreground">{t('supervisor')}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="ml-auto">
-                            <Settings className="size-4" />
-                        </Button>
+                         <div className="ml-auto flex items-center gap-2">
+                            <LanguageSwitcher />
+                            <Button variant="ghost" size="icon">
+                                <Settings className="size-4" />
+                            </Button>
+                        </div>
                    </div>
                 </SidebarFooter>
             </Sidebar>
@@ -98,21 +128,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     );
 }
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState(false);
-
-  React.useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkIsMobile);
-    };
-  }, []);
-
-  return isMobile;
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <TranslationProvider>
+            <InnerDashboardLayout>{children}</InnerDashboardLayout>
+        </TranslationProvider>
+    )
 }

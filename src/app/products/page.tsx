@@ -16,10 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Frown, PlusCircle } from "lucide-react";
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProducts } from '@/lib/api';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
@@ -47,27 +49,27 @@ export default function ProductsPage() {
         <div className="flex items-center justify-between space-y-2">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Products
+              {t('products')}
             </h1>
             <p className="text-muted-foreground">
-              Manage all products in the system.
+              {t('products_desc')}
             </p>
           </div>
           <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+            <PlusCircle className="mr-2 h-4 w-4" /> {t('add_product')}
           </Button>
         </div>
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Product List</CardTitle>
+            <CardTitle>{t('product_list')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product Title</TableHead>
-                  <TableHead>Product Code</TableHead>
-                  <TableHead>Assigned Production Line</TableHead>
+                  <TableHead>{t('product_title')}</TableHead>
+                  <TableHead>{t('product_code')}</TableHead>
+                  <TableHead>{t('assigned_production_line')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,9 +94,9 @@ export default function ProductsPage() {
                     <TableCell colSpan={3} className="h-24 text-center">
                        <div className="flex flex-col items-center justify-center gap-2">
                           <Frown className="w-8 h-8 text-muted-foreground" />
-                          <p className="font-semibold text-muted-foreground">No products found.</p>
+                          <p className="font-semibold text-muted-foreground">{t('no_products_found')}</p>
                           <p className="text-sm text-muted-foreground">
-                            Either no products exist or the data could not be loaded.
+                            {t('no_products_found_desc')}
                           </p>
                        </div>
                     </TableCell>

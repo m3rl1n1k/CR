@@ -19,10 +19,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getProblems } from '@/lib/api';
 import { format } from 'date-fns';
 import { Frown } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
@@ -57,28 +59,28 @@ export default function ProblemsPage() {
         <div className="flex items-center justify-between space-y-2">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Problem Reporting
+              {t('problem_reporting')}
             </h1>
             <p className="text-muted-foreground">
-              View and filter production problems reported on the line.
+              {t('problem_reporting_desc')}
             </p>
           </div>
           <DatePickerWithRange />
         </div>
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Reported Issues</CardTitle>
+            <CardTitle>{t('reported_issues')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Line</TableHead>
-                  <TableHead>Machine</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t('date')}</TableHead>
+                  <TableHead>{t('line')}</TableHead>
+                  <TableHead>{t('machine')}</TableHead>
+                  <TableHead>{t('description')}</TableHead>
+                  <TableHead>{t('priority')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -130,9 +132,9 @@ export default function ProblemsPage() {
                     <TableCell colSpan={6} className="h-24 text-center">
                        <div className="flex flex-col items-center justify-center gap-2">
                           <Frown className="w-8 h-8 text-muted-foreground" />
-                          <p className="font-semibold text-muted-foreground">No problems found.</p>
+                          <p className="font-semibold text-muted-foreground">{t('no_problems_found')}</p>
                           <p className="text-sm text-muted-foreground">
-                            Either no problems have been reported or the data could not be loaded.
+                            {t('no_problems_found_desc')}
                           </p>
                        </div>
                     </TableCell>

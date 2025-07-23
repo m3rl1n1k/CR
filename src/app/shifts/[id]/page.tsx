@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -17,11 +20,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, AlertCircle, Package, Calendar, Users, CheckCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getShift, getProblems } from "@/lib/api";
 import { Problem, Shift } from "@/lib/data";
 import { format } from "date-fns";
+import { useTranslation } from '@/hooks/use-translation';
 
 async function getData(shiftId: string): Promise<{shift: Shift | null, problems: Problem[]}> {
     try {
@@ -73,11 +77,29 @@ async function getData(shiftId: string): Promise<{shift: Shift | null, problems:
 }
 
 
-export default async function ShiftDetailsPage({ params }: { params: { id: string } }) {
-  const { shift, problems: shiftProblems } = await getData(params.id);
-  
+export default function ShiftDetailsPage() {
+  const params = useParams();
+  const { id: shiftId } = params;
+  const { t } = useTranslation();
+
+  const [shift, setShift] = React.useState<Shift | null>(null);
+  const [shiftProblems, setShiftProblems] = React.useState<Problem[]>([]);
+
+  React.useEffect(() => {
+    if (typeof shiftId === 'string') {
+        getData(shiftId).then(({shift, problems}) => {
+            setShift(shift);
+            setShiftProblems(problems);
+        });
+    }
+  }, [shiftId]);
+
   if (!shift) {
-    notFound();
+    return (
+        <DashboardLayout>
+            <div className="p-8">{t('loading')}</div>
+        </DashboardLayout>
+    )
   }
 
   return (
@@ -86,21 +108,21 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
         <div className="flex items-center justify-between space-y-2">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                    Shift Dashboard: {shift.name}
+                    {t('shift_dashboard')}: {shift.name}
                 </h1>
                 <p className="text-muted-foreground">
-                    Details for production shift on {shift.date}
+                    {t('shift_details_for_date', { date: shift.date })}
                 </p>
             </div>
           <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Problem
+            <PlusCircle className="mr-2 h-4 w-4" /> {t('add_problem')}
           </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Production Line</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t('production_line')}</CardTitle>
                     <Package className="h-4 w-4 text-muted-foreground"/>
                 </CardHeader>
                 <CardContent>
@@ -109,7 +131,7 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
              </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Shift Date</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t('shift_date')}</CardTitle>
                     <Calendar className="h-4 w-4 text-muted-foreground"/>
                 </CardHeader>
                 <CardContent>
@@ -118,7 +140,7 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
              </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Supervisor</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t('supervisor')}</CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground"/>
                 </CardHeader>
                 <CardContent>
@@ -127,7 +149,7 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
              </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Status</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t('status')}</CardTitle>
                     <CheckCircle className="h-4 w-4 text-muted-foreground"/>
                 </CardHeader>
                 <CardContent>
@@ -139,23 +161,23 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4 shadow-lg">
                 <CardHeader>
-                    <CardTitle>Work Card Details</CardTitle>
+                    <CardTitle>{t('work_card_details')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                    <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <h4 className="font-semibold text-sm">Product</h4>
+                            <h4 className="font-semibold text-sm">{t('product')}</h4>
                             <p className="text-muted-foreground">{shift.workCard.productName}</p>
                         </div>
                         <div>
-                            <h4 className="font-semibold text-sm">Product Code</h4>
+                            <h4 className="font-semibold text-sm">{t('product_code')}</h4>
                             <p className="text-muted-foreground">{shift.workCard.productCode}</p>
                         </div>
                    </div>
                    <div>
                         <div className="flex justify-between items-center mb-1">
-                            <h4 className="font-semibold text-sm">Production Target</h4>
-                             <span className="text-sm font-semibold">{shift.workCard.produced} / {shift.workCard.target} Units</span>
+                            <h4 className="font-semibold text-sm">{t('production_target')}</h4>
+                             <span className="text-sm font-semibold">{shift.workCard.produced} / {shift.workCard.target} {t('units')}</span>
                         </div>
                         <Progress value={(shift.workCard.produced / shift.workCard.target) * 100} />
                    </div>
@@ -165,7 +187,7 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
             <Card className="col-span-3 shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                        <span>Shift Problems</span>
+                        <span>{t('shift_problems')}</span>
                         <AlertCircle className="h-5 w-5 text-destructive" />
                     </CardTitle>
                 </CardHeader>
@@ -174,9 +196,9 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Machine</TableHead>
-                                <TableHead>Issue</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead>{t('machine')}</TableHead>
+                                <TableHead>{t('issue')}</TableHead>
+                                <TableHead>{t('status')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -200,7 +222,7 @@ export default async function ShiftDetailsPage({ params }: { params: { id: strin
                     </Table>
                     ) : (
                         <div className="text-center text-muted-foreground py-8">
-                            No problems reported for this shift.
+                            {t('no_problems_reported')}
                         </div>
                     )}
                 </CardContent>
