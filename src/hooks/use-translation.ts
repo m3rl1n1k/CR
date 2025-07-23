@@ -24,39 +24,51 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && ['en', 'pl', 'uk'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
+    } else {
+      setLanguageState('en');
     }
-    // No else needed, default is 'en'
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchTranslations = async () => {
       setLoading(true);
       try {
         const response = await fetch(`/locales/${language}.json`);
         if (!response.ok) {
           console.error(`Could not load translations for ${language}, falling back to English.`);
-          // Attempt to load fallback English translations
           const fallbackResponse = await fetch(`/locales/en.json`);
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            setTranslations(fallbackData);
-          } else {
-            // If even English fails, set empty translations
-            setTranslations({});
+          if (isMounted) {
+            if (fallbackResponse.ok) {
+              const fallbackData = await fallbackResponse.json();
+              setTranslations(fallbackData);
+            } else {
+              setTranslations({});
+            }
           }
           return;
         }
         const data = await response.json();
-        setTranslations(data);
+        if (isMounted) {
+          setTranslations(data);
+        }
       } catch (error) {
         console.error('Failed to fetch translations:', error);
-        setTranslations({}); // Set empty on error
+        if (isMounted) {
+          setTranslations({});
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchTranslations();
+
+    return () => {
+      isMounted = false;
+    };
   }, [language]);
 
   const setLanguage = (lang: string) => {
@@ -79,8 +91,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
   const value = { language, setLanguage, t };
 
   if (loading) {
-    // Render nothing or a loading spinner while translations are loading
-    return null;
+    return null; // Render nothing while loading translations for the first time
   }
 
   return (

@@ -18,10 +18,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getProducts } from '@/lib/api';
 import { useTranslation } from '@/hooks/use-translation';
 
-export default function ProductsPage() {
+
+function useProductsData() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
@@ -35,13 +35,66 @@ export default function ProductsPage() {
         })));
       } catch (error) {
         console.error("Failed to fetch products", error);
-        // You could add toast notifications here
       } finally {
         setLoading(false);
       }
     }
     fetchData();
   }, []);
+  
+  return { products, loading };
+}
+
+function ProductsTable({ products, loading }: { products: Product[], loading: boolean }) {
+  const { t } = useTranslation();
+
+  if (loading) {
+    return (
+        <TableBody>
+            {Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={index}>
+                    <TableCell><Skeleton className="h-4 w-[250px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
+    );
+  }
+
+  if (products.length === 0) {
+      return (
+          <TableBody>
+              <TableRow>
+                <TableCell colSpan={3} className="h-24 text-center">
+                   <div className="flex flex-col items-center justify-center gap-2">
+                      <Frown className="w-8 h-8 text-muted-foreground" />
+                      <p className="font-semibold text-muted-foreground">{t('no_products_found')}</p>
+                      <p className="text-sm text-muted-foreground">{t('no_products_found_desc')}</p>
+                   </div>
+                </TableCell>
+              </TableRow>
+          </TableBody>
+      )
+  }
+
+  return (
+      <TableBody>
+          {products.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell className="font-medium">{product.title}</TableCell>
+              <TableCell>{product.code}</TableCell>
+              <TableCell>{product.productionLine?.split('/').pop() || 'N/A'}</TableCell>
+            </TableRow>
+          ))}
+      </TableBody>
+  );
+}
+
+
+export default function ProductsPage() {
+  const { products, loading } = useProductsData();
+  const { t } = useTranslation();
 
   return (
     <DashboardLayout>
@@ -72,37 +125,7 @@ export default function ProductsPage() {
                   <TableHead>{t('assigned_production_line')}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell><Skeleton className="h-4 w-[250px]" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : products.length > 0 ? (
-                  products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.title}</TableCell>
-                      <TableCell>{product.code}</TableCell>
-                      <TableCell>{product.productionLine?.split('/').pop() || 'N/A'}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
-                       <div className="flex flex-col items-center justify-center gap-2">
-                          <Frown className="w-8 h-8 text-muted-foreground" />
-                          <p className="font-semibold text-muted-foreground">{t('no_products_found')}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {t('no_products_found_desc')}
-                          </p>
-                       </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
+              <ProductsTable products={products} loading={loading} />
             </Table>
           </CardContent>
         </Card>
