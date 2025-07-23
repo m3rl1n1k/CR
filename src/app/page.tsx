@@ -8,20 +8,25 @@ import Link from "next/link";
 import { getProductionLines } from "@/lib/api";
 
 async function getLines(): Promise<ProductionLine[]> {
-  const lines = await getProductionLines();
-  // The API doesn't provide all the fields the card component needs.
-  // We'll add some placeholder data.
-  return lines.map((line, index) => ({
-    ...line,
-    id: line.lineCode || `line-${index}`,
-    name: line.lineName || 'Unnamed Line',
-    status: "Running", // Placeholder
-    oee: Math.floor(Math.random() * (95 - 75 + 1) + 75), // Placeholder
-    currentProduct: "Widget Pro", // Placeholder
-    shiftProgress: Math.floor(Math.random() * (90 - 40 + 1) + 40), // Placeholder
-    alerts: Math.floor(Math.random() * 5), // Placeholder
-    currentShiftId: `shift-${index}` // Placeholder
-  }));
+  try {
+    const lines = await getProductionLines();
+    // The API doesn't provide all the fields the card component needs.
+    // We'll add some placeholder data.
+    return lines.map((line, index) => ({
+      ...line,
+      id: line.lineCode || `line-${index}`,
+      name: line.lineName || 'Unnamed Line',
+      status: "Running", // Placeholder
+      oee: Math.floor(Math.random() * (95 - 75 + 1) + 75), // Placeholder
+      currentProduct: "Widget Pro", // Placeholder
+      shiftProgress: Math.floor(Math.random() * (90 - 40 + 1) + 40), // Placeholder
+      alerts: Math.floor(Math.random() * 5), // Placeholder
+      currentShiftId: `shift-${index}` // Placeholder
+    }));
+  } catch (error) {
+    console.error("Failed to get production lines:", error);
+    return [];
+  }
 }
 
 

@@ -24,47 +24,52 @@ import { Problem, Shift } from "@/lib/data";
 import { format } from "date-fns";
 
 async function getData(shiftId: string): Promise<{shift: Shift | null, problems: Problem[]}> {
-    const shiftPromise = getShift(shiftId);
-    const problemsPromise = getProblems(); // API doesn't support filtering problems by shift
+    try {
+        const shiftPromise = getShift(shiftId);
+        const problemsPromise = getProblems(); // API doesn't support filtering problems by shift
 
-    const [shift, allProblems] = await Promise.all([shiftPromise, problemsPromise]);
-    
-    if (!shift) {
+        const [shift, allProblems] = await Promise.all([shiftPromise, problemsPromise]);
+        
+        if (!shift) {
+            return { shift: null, problems: [] };
+        }
+        
+        // Mocking data not available in API for a richer UI
+        const enrichedShift = {
+            ...shift,
+            id: shift['@id'] || shiftId,
+            name: `Shift ${shiftId}`,
+            line: shift.productionLine?.split('/').pop() || `Line ${shiftId}`,
+            date: format(new Date(), 'yyyy-MM-dd'),
+            supervisor: "Jane Doe",
+            status: 'In Progress' as const,
+            workCard: {
+                id: `wc-${shiftId}`,
+                productName: 'Widget Pro',
+                productCode: 'WPRO-001',
+                target: 5000,
+                produced: 3250
+            }
+        };
+
+        // Since we can't filter by shiftId from the API, we will just show a few recent problems.
+        const problems = allProblems.slice(0, 5).map(p => ({
+            ...p,
+            id: p.id!,
+            date: p.createdAt ? format(new Date(p.createdAt), 'yyyy-MM-dd') : 'N/A',
+            line: p.productionLine?.split('/').pop() || 'N/A',
+            machine: 'Unknown',
+            description: p.comment || 'No description',
+            priority: 'Medium' as const,
+            status: p.status as Problem['status'] || 'Open',
+            shiftId: shiftId
+        }));
+        
+        return { shift: enrichedShift, problems };
+    } catch (error) {
+        console.error("Failed to get shift data:", error);
         return { shift: null, problems: [] };
     }
-    
-    // Mocking data not available in API for a richer UI
-    const enrichedShift = {
-        ...shift,
-        id: shiftId,
-        name: `Shift ${shiftId}`,
-        line: shift.productionLine?.split('/').pop() || `Line ${shiftId}`,
-        date: format(new Date(), 'yyyy-MM-dd'),
-        supervisor: "Jane Doe",
-        status: 'In Progress' as const,
-        workCard: {
-            id: `wc-${shiftId}`,
-            productName: 'Widget Pro',
-            productCode: 'WPRO-001',
-            target: 5000,
-            produced: 3250
-        }
-    };
-
-    // Since we can't filter by shiftId from the API, we will just show a few recent problems.
-    const problems = allProblems.slice(0, 5).map(p => ({
-        ...p,
-        id: p.id!,
-        date: p.createdAt ? format(new Date(p.createdAt), 'yyyy-MM-dd') : 'N/A',
-        line: p.productionLine?.split('/').pop() || 'N/A',
-        machine: 'Unknown',
-        description: p.comment || 'No description',
-        priority: 'Medium' as const,
-        status: p.status as Problem['status'] || 'Open',
-        shiftId: shiftId
-    }));
-    
-    return { shift: enrichedShift, problems };
 }
 
 
