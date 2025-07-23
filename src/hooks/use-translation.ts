@@ -20,6 +20,11 @@ interface TranslationProviderProps {
 
 // This function should only be called on the client side
 const getInitialLanguage = (): string => {
+    // On the server, always default to 'en'.
+    if (typeof window === 'undefined') {
+        return 'en';
+    }
+    // On the client, try to get from localStorage.
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && ['en', 'pl', 'uk'].includes(savedLanguage)) {
         return savedLanguage;
@@ -28,8 +33,8 @@ const getInitialLanguage = (): string => {
 };
 
 export const TranslationProvider = ({ children }: TranslationProviderProps) => {
-  // Initialize state without calling client-side APIs directly
-  const [language, setLanguageState] = useState<string>('en'); 
+  // Initialize state with a function to ensure it's only called on the client.
+  const [language, setLanguageState] = useState<string>(getInitialLanguage); 
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
@@ -77,7 +82,9 @@ export const TranslationProvider = ({ children }: TranslationProviderProps) => {
   // Function to set a new language and save it to localStorage
   const setLanguage = (lang: string) => {
     if (['en', 'pl', 'uk'].includes(lang)) {
-      localStorage.setItem('language', lang);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('language', lang);
+      }
       setIsLoaded(false); // Set loading state while new translations are fetched
       setLanguageState(lang);
     }
@@ -97,11 +104,7 @@ export const TranslationProvider = ({ children }: TranslationProviderProps) => {
   // The value to be provided by the context
   const value = { language, setLanguage, t, isLoaded };
 
-  return (
-    <TranslationContext.Provider value={value}>
-      {isLoaded ? children : null}
-    </TranslationContext.Provider>
-  );
+  return React.createElement(TranslationContext.Provider, { value: value }, isLoaded ? children : null);
 };
 
 // Custom hook to use the translation context
