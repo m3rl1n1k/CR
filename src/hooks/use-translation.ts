@@ -20,16 +20,16 @@ interface TranslationProviderProps {
 
 // This function should only be called on the client side
 const getInitialLanguage = (): string => {
-    // On the server, always default to 'en'.
+    // On the server, always default to 'pl'.
     if (typeof window === 'undefined') {
-        return 'en';
+        return 'pl';
     }
     // On the client, try to get from localStorage.
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && ['en', 'pl', 'uk'].includes(savedLanguage)) {
         return savedLanguage;
     }
-    return 'en'; // Default language
+    return 'pl'; // Default language
 };
 
 export const TranslationProvider = ({ children }: TranslationProviderProps) => {
