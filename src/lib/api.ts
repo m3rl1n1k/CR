@@ -35,6 +35,7 @@ interface HydraCollection<T> {
 
 async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<T> {
   try {
+    logger.log(`Fetching URL: ${url}`);
     logger.log(`API call: ${options.method || 'GET'} ${url}`, options.body ? { body: options.body } : {});
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const headers: HeadersInit = {
