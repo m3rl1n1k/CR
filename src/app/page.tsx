@@ -4,7 +4,7 @@ import React from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProductionLineCard } from "@/components/production-line-card";
 import { ProductionLine } from "@/lib/data";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Activity, AlertTriangle, Frown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
