@@ -93,28 +93,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [initAuth]);
 
   const login = async (personalNumber: string, password: string) => {
-    logger.log(`Attempting login for user: ${personalNumber}`);
-    const response = await fetch(URLS.Auth, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username: personalNumber, password }),
-    });
+    try {
+        logger.log(`Attempting login for user: ${personalNumber}`);
+        const response = await fetch(URLS.Auth, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ username: personalNumber, password }),
+        });
 
-    if (!response.ok) {
-      logger.error('Authentication failed with status:', response.status);
-      throw new Error('Authentication failed');
+        if (!response.ok) {
+          logger.error('Authentication failed with status:', response.status);
+          const errorData = await response.text();
+          throw new Error(errorData || 'Authentication failed');
+        }
+
+        const data = await response.json();
+        const { token: newToken } = data;
+        
+        logger.log('Login successful, received token.');
+        localStorage.setItem('authToken', newToken);
+        const newUser = parseJwt(newToken);
+        setUser(newUser);
+        setToken(newToken);
+    } catch (error: any) {
+        logger.error('Login request failed:', error);
+        // If it's a network error, the message might be more generic
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            throw new Error('Could not connect to the server. Please check the network connection and CORS configuration.');
+        }
+        throw error;
     }
-
-    const data = await response.json();
-    const { token: newToken } = data;
-    
-    logger.log('Login successful, received token.');
-    localStorage.setItem('authToken', newToken);
-    const newUser = parseJwt(newToken);
-    setUser(newUser);
-    setToken(newToken);
   };
 
   const logout = () => {

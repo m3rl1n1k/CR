@@ -42,9 +42,10 @@ export default function LoginPage() {
                 description: t('redirecting_to_dashboard'),
             });
             router.push('/');
-        } catch (err) {
-             setError(t('login_failed_error'));
-             setIsLoading(false);
+        } catch (err: any) {
+             setError(err.message || t('login_failed_error'));
+        } finally {
+            setIsLoading(false);
         }
     }
 
