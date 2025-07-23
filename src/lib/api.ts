@@ -2,7 +2,7 @@
 import type { Problem, Product, ProductionLine, Shift, User } from './data';
 import { logger } from './logger';
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, "");
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80').replace(/\/$/, "");
 
 export const URLS = {
   Auth: `${API_BASE_URL}/auth`,
