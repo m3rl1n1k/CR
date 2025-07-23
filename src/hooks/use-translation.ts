@@ -1,52 +1,52 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 
+// Define the shape of the context value
 interface TranslationContextType {
   language: string;
   setLanguage: (language: string) => void;
   t: (key: string, options?: Record<string, string>) => string;
+  isLoaded: boolean;
 }
 
+// Create the context with a default value
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
 interface TranslationProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const TranslationProvider: React.FC<TranslationProviderProps> = ({ children }) => {
-  const [language, setLanguageState] = useState('en');
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+// This function should only be called on the client side
+const getInitialLanguage = (): string => {
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && ['en', 'pl', 'uk'].includes(savedLanguage)) {
-      setLanguageState(savedLanguage);
-    } else {
-      setLanguageState('en');
+        return savedLanguage;
     }
+    return 'en'; // Default language
+};
+
+export const TranslationProvider = ({ children }: TranslationProviderProps) => {
+  // Initialize state without calling client-side APIs directly
+  const [language, setLanguageState] = useState<string>('en'); 
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+
+  // Effect for setting the initial language from localStorage on mount
+  useEffect(() => {
+    setLanguageState(getInitialLanguage());
   }, []);
 
+  // Effect to fetch translations when the language changes
   useEffect(() => {
     let isMounted = true;
     const fetchTranslations = async () => {
-      setLoading(true);
+      // Don't set isLoaded to false here, to avoid flashing content
       try {
         const response = await fetch(`/locales/${language}.json`);
         if (!response.ok) {
-          console.error(`Could not load translations for ${language}, falling back to English.`);
-          const fallbackResponse = await fetch(`/locales/en.json`);
-          if (isMounted) {
-            if (fallbackResponse.ok) {
-              const fallbackData = await fallbackResponse.json();
-              setTranslations(fallbackData);
-            } else {
-              setTranslations({});
-            }
-          }
-          return;
+          throw new Error(`Could not load translations for ${language}`);
         }
         const data = await response.json();
         if (isMounted) {
@@ -54,12 +54,15 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         }
       } catch (error) {
         console.error('Failed to fetch translations:', error);
-        if (isMounted) {
-          setTranslations({});
+        // Fallback to English if the desired language fails
+        if (language !== 'en' && isMounted) {
+            setLanguageState('en');
+        } else if (isMounted) {
+             setTranslations({}); // Empty translations on error with English
         }
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setIsLoaded(true);
         }
       }
     };
@@ -71,13 +74,16 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     };
   }, [language]);
 
+  // Function to set a new language and save it to localStorage
   const setLanguage = (lang: string) => {
     if (['en', 'pl', 'uk'].includes(lang)) {
       localStorage.setItem('language', lang);
+      setIsLoaded(false); // Set loading state while new translations are fetched
       setLanguageState(lang);
     }
   };
 
+  // The translation function `t`
   const t = useCallback((key: string, options?: Record<string, string>) => {
     let translation = translations[key] || key;
     if (options) {
@@ -88,19 +94,17 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     return translation;
   }, [translations]);
 
-  const value = { language, setLanguage, t };
-
-  if (loading) {
-    return null; // Render nothing while loading translations for the first time
-  }
+  // The value to be provided by the context
+  const value = { language, setLanguage, t, isLoaded };
 
   return (
     <TranslationContext.Provider value={value}>
-      {children}
+      {isLoaded ? children : null}
     </TranslationContext.Provider>
   );
 };
 
+// Custom hook to use the translation context
 export const useTranslation = (): TranslationContextType => {
   const context = useContext(TranslationContext);
   if (context === undefined) {
