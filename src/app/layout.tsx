@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { TranslationProvider } from '@/hooks/use-translation';
 import { AuthProvider } from '@/hooks/use-auth';
+import { DebugProvider } from '@/hooks/use-debug';
 
 export const metadata: Metadata = {
   title: 'Production Insights',
@@ -22,11 +23,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <TranslationProvider>
-            <AuthProvider>
-                {children}
-            </AuthProvider>
-        </TranslationProvider>
+        <DebugProvider>
+            <TranslationProvider>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+            </TranslationProvider>
+        </DebugProvider>
         <Toaster />
       </body>
     </html>

@@ -1,5 +1,6 @@
 
 import type { Problem, Product, ProductionLine, Shift, User } from './data';
+import { logger } from './logger';
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, "");
 
@@ -34,6 +35,7 @@ interface HydraCollection<T> {
 
 async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<T> {
   try {
+    logger.log(`API call: ${options.method || 'GET'} ${url}`, options.body ? { body: options.body } : {});
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const headers: HeadersInit = {
         'Accept': 'application/ld+json',
@@ -53,17 +55,21 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`API call to ${url} failed with status ${response.status}: ${errorText}`);
+      logger.error(`API call to ${url} failed with status ${response.status}: ${errorText}`);
       throw new Error(`API call failed: ${response.status} ${errorText}`);
     }
     
     if (response.status === 204) { // No Content
+        logger.log(`API response from ${url}: 204 No Content`);
         return null as T;
     }
 
-    return await response.json();
+    const jsonResponse = await response.json();
+    logger.log(`API response from ${url}:`, jsonResponse);
+    return jsonResponse;
+
   } catch (error) {
-    console.error(`Failed to fetch from ${url}`, error);
+    logger.error(`Failed to fetch from ${url}`, error);
     return Promise.reject(error);
   }
 }

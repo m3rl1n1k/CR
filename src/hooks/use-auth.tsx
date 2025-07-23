@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User } from '@/lib/data';
 import { URLS } from '@/lib/api';
 import { jwtDecode } from 'jwt-decode';
+import { logger } from '@/lib/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -28,8 +29,10 @@ interface DecodedToken {
 const parseJwt = (token: string): User | null => {
     try {
         const decoded = jwtDecode<DecodedToken>(token);
+        logger.log('Decoded JWT:', decoded);
         // Check if the token has expired
         if (decoded.exp * 1000 < Date.now()) {
+            logger.warn('JWT has expired.');
             return null;
         }
         return {
@@ -40,7 +43,7 @@ const parseJwt = (token: string): User | null => {
             role: decoded.roles.includes('ROLE_SUPERVISOR') ? 'Supervisor' : 'Operator',
         };
     } catch (error) {
-        console.error("Failed to decode JWT:", error);
+        logger.error("Failed to decode JWT:", error);
         return null;
     }
 };
@@ -54,13 +57,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const initAuth = useCallback(() => {
     setLoading(true);
     const storedToken = localStorage.getItem('authToken');
+    logger.log('Initializing auth, token from storage:', storedToken);
     if (storedToken) {
       const userData = parseJwt(storedToken);
       if (userData) {
+        logger.log('User data parsed from token:', userData);
         setUser(userData);
         setToken(storedToken);
       } else {
         // Token is invalid or expired
+        logger.warn('Token is invalid or expired, clearing auth state.');
         localStorage.removeItem('authToken');
         setUser(null);
         setToken(null);
@@ -75,6 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for storage changes to sync across tabs
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'authToken') {
+            logger.log('Auth token changed in another tab, re-initializing auth.');
             initAuth();
         }
     };
@@ -86,6 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [initAuth]);
 
   const login = async (personalNumber: string, password: string) => {
+    logger.log(`Attempting login for user: ${personalNumber}`);
     const response = await fetch(URLS.Auth, {
       method: 'POST',
       headers: {
@@ -95,12 +103,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (!response.ok) {
+      logger.error('Authentication failed with status:', response.status);
       throw new Error('Authentication failed');
     }
 
     const data = await response.json();
     const { token: newToken } = data;
     
+    logger.log('Login successful, received token.');
     localStorage.setItem('authToken', newToken);
     const newUser = parseJwt(newToken);
     setUser(newUser);
@@ -108,6 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    logger.log('User logging out.');
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
