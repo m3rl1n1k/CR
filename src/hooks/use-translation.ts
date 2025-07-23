@@ -25,7 +25,6 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     if (savedLanguage && ['en', 'pl', 'uk'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
     } else {
-      // Keep 'en' as default if nothing is saved or value is invalid
       setLanguageState('en');
     }
   }, []);
@@ -37,13 +36,12 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         const response = await fetch(`/locales/${language}.json`);
         if (!response.ok) {
           console.error(`Could not load translations for ${language}`);
-          // Attempt to load fallback English translations if the desired one fails
           if (language !== 'en') {
              const fallbackResponse = await fetch(`/locales/en.json`);
              const fallbackData = await fallbackResponse.json();
              setTranslations(fallbackData);
           } else {
-             setTranslations({}); // No translations found for English, use keys as fallback
+             setTranslations({});
           }
           return;
         }
@@ -51,7 +49,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         setTranslations(data);
       } catch (error) {
         console.error('Failed to fetch translations:', error);
-        setTranslations({}); // On error, use keys as fallback
+        setTranslations({});
       } finally {
         setLoading(false);
       }
@@ -80,8 +78,6 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
   const value = { language, setLanguage, t };
 
   if (loading) {
-    // Render nothing or a loading indicator while translations are loading
-    // to prevent a flash of untranslated content.
     return null;
   }
 
