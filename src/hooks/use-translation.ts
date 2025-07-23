@@ -24,9 +24,8 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && ['en', 'pl', 'uk'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
-    } else {
-      setLanguageState('en');
     }
+    // No else needed, default is 'en'
   }, []);
 
   useEffect(() => {
@@ -35,13 +34,15 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
       try {
         const response = await fetch(`/locales/${language}.json`);
         if (!response.ok) {
-          console.error(`Could not load translations for ${language}`);
-          if (language !== 'en') {
-             const fallbackResponse = await fetch(`/locales/en.json`);
-             const fallbackData = await fallbackResponse.json();
-             setTranslations(fallbackData);
+          console.error(`Could not load translations for ${language}, falling back to English.`);
+          // Attempt to load fallback English translations
+          const fallbackResponse = await fetch(`/locales/en.json`);
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            setTranslations(fallbackData);
           } else {
-             setTranslations({});
+            // If even English fails, set empty translations
+            setTranslations({});
           }
           return;
         }
@@ -49,7 +50,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
         setTranslations(data);
       } catch (error) {
         console.error('Failed to fetch translations:', error);
-        setTranslations({});
+        setTranslations({}); // Set empty on error
       } finally {
         setLoading(false);
       }
@@ -78,6 +79,7 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
   const value = { language, setLanguage, t };
 
   if (loading) {
+    // Render nothing or a loading spinner while translations are loading
     return null;
   }
 
