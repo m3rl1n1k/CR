@@ -39,8 +39,8 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
     logger.log(`API call: ${options.method || 'GET'} ${url}`, options.body ? { body: options.body } : {});
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const headers: HeadersInit = {
-        'Accept': 'application/ld+json',
-        'Content-Type': 'application/ld+json',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
         ...options.headers,
     };
 
