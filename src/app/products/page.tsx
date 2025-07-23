@@ -17,6 +17,7 @@ import { Frown, PlusCircle } from "lucide-react";
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProducts } from '@/lib/api';
 import { useTranslation } from '@/hooks/use-translation';
+import { PrivateRoute } from '@/components/auth/private-route';
 
 
 function useProductsData() {
@@ -92,7 +93,7 @@ function ProductsTable({ products, loading }: { products: Product[], loading: bo
 }
 
 
-export default function ProductsPage() {
+function ProductsPageContent() {
   const { products, loading } = useProductsData();
   const { t } = useTranslation();
 
@@ -132,4 +133,13 @@ export default function ProductsPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+
+export default function ProductsPage() {
+    return (
+        <PrivateRoute>
+            <ProductsPageContent />
+        </PrivateRoute>
+    )
 }

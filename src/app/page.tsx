@@ -4,13 +4,14 @@ import React from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProductionLineCard } from "@/components/production-line-card";
 import { ProductionLine } from "@/lib/data";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { BarChart, Activity, AlertTriangle, Frown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getProductionLines } from "@/lib/api";
 import { useTranslation } from '@/hooks/use-translation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PrivateRoute } from '@/components/auth/private-route';
 
 function useProductionData() {
   const [productionLines, setProductionLines] = React.useState<ProductionLine[]>([]);
@@ -145,7 +146,7 @@ function ProductionLinesGrid({ lines, loading }: { lines: ProductionLine[], load
 }
 
 
-export default function Home() {
+function HomePageContent() {
   const { t } = useTranslation();
   const { loading, productionLines, overallOEE, activeShifts, totalAlerts } = useProductionData();
 
@@ -172,4 +173,12 @@ export default function Home() {
       </div>
     </DashboardLayout>
   );
+}
+
+export default function Home() {
+    return (
+        <PrivateRoute>
+            <HomePageContent />
+        </PrivateRoute>
+    )
 }

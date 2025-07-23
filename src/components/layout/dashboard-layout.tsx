@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     Home,
     Bot,
@@ -12,6 +12,7 @@ import {
     LayoutDashboard,
     Package,
     Globe,
+    LogOut,
 } from 'lucide-react';
 import {
     Sidebar,
@@ -34,8 +35,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { useTranslation } from '@/hooks/use-translation';
+import { useAuth } from '@/hooks/use-auth';
 
 const navItems = [
     { href: '/', labelKey: 'overview', icon: LayoutDashboard },
@@ -64,7 +67,14 @@ function LanguageSwitcher() {
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
     const { t } = useTranslation();
+    const { user, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        router.push('/login');
+    }
 
     return (
         <SidebarProvider>
@@ -79,8 +89,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <SidebarMenu>
                         {navItems.map((item) => (
                             <SidebarMenuItem key={item.href}>
-                                <Link href={item.href}>
+                                <Link href={item.href} passHref>
                                     <SidebarMenuButton
+                                        as="a"
                                         isActive={pathname === item.href}
                                         tooltip={t(item.labelKey)}
                                         className="justify-start"
@@ -97,18 +108,28 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <SidebarFooter>
                    <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                            <AvatarImage src="https://placehold.co/100x100.png" alt="@shadcn" data-ai-hint="manager portrait" />
-                            <AvatarFallback>JD</AvatarFallback>
+                            <AvatarImage src="https://placehold.co/100x100.png" alt={user?.name || 'User'} data-ai-hint="manager portrait" />
+                            <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                            <span className="font-semibold text-sm">Jane Doe</span>
-                            <span className="text-xs text-muted-foreground">{t('supervisor')}</span>
+                            <span className="font-semibold text-sm">{user?.name || 'User'}</span>
+                            <span className="text-xs text-muted-foreground">{user?.role || t('supervisor')}</span>
                         </div>
                          <div className="ml-auto flex items-center gap-2">
-                            <LanguageSwitcher />
-                            <Button variant="ghost" size="icon">
-                                <Settings className="size-4" />
-                            </Button>
+                             <LanguageSwitcher />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <Settings className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={handleLogout}>
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>{t('logout')}</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                    </div>
                 </SidebarFooter>

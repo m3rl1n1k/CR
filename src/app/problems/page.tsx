@@ -20,7 +20,7 @@ import { getProblems } from '@/lib/api';
 import { format } from 'date-fns';
 import { Frown } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
-
+import { PrivateRoute } from '@/components/auth/private-route';
 
 function useProblemsData() {
   const [problems, setProblems] = useState<Problem[]>([]);
@@ -128,7 +128,7 @@ function ProblemsTable({ problems, loading }: { problems: Problem[], loading: bo
     );
 }
 
-export default function ProblemsPage() {
+function ProblemsPageContent() {
   const { problems, loading } = useProblemsData();
   const { t } = useTranslation();
 
@@ -169,4 +169,12 @@ export default function ProblemsPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+export default function ProblemsPage() {
+    return (
+        <PrivateRoute>
+            <ProblemsPageContent />
+        </PrivateRoute>
+    )
 }

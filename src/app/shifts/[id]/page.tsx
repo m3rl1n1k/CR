@@ -27,6 +27,7 @@ import { Problem, Shift } from "@/lib/data";
 import { format } from "date-fns";
 import { useTranslation } from '@/hooks/use-translation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PrivateRoute } from '@/components/auth/private-route';
 
 function useShiftData(shiftId: string | undefined | null) {
   const [shift, setShift] = React.useState<Shift | null>(null);
@@ -277,7 +278,7 @@ function ShiftProblems({ problems, loading }: { problems: Problem[], loading: bo
 }
 
 
-export default function ShiftDetailsPage() {
+function ShiftDetailsPageContent() {
   const params = useParams();
   const { id } = params;
   const { t } = useTranslation();
@@ -304,4 +305,12 @@ export default function ShiftDetailsPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+export default function ShiftDetailsPage() {
+    return (
+        <PrivateRoute>
+            <ShiftDetailsPageContent />
+        </PrivateRoute>
+    )
 }

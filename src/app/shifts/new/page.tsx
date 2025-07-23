@@ -26,8 +26,9 @@ import { Loader2 } from "lucide-react";
 import { createShift, getProductionLines, getUsers } from "@/lib/api";
 import { ProductionLine, User } from "@/lib/data";
 import { useTranslation } from "@/hooks/use-translation";
+import { PrivateRoute } from "@/components/auth/private-route";
 
-export default function NewShiftPage() {
+function NewShiftPageContent() {
     const { toast } = useToast();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -160,4 +161,12 @@ export default function NewShiftPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+export default function NewShiftPage() {
+    return (
+        <PrivateRoute>
+            <NewShiftPageContent />
+        </PrivateRoute>
+    )
 }

@@ -4,6 +4,7 @@ import type { Problem, Product, ProductionLine, Shift, User } from './data';
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, "");
 
 export const URLS = {
+  Auth: `${API_BASE_URL}/auth`,
   ProductionLines: {
     collection: `${API_BASE_URL}/production_lines`,
     item: (lineCode: string) => `${API_BASE_URL}/production_lines/${lineCode}`,
@@ -33,13 +34,20 @@ interface HydraCollection<T> {
 
 async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<T> {
   try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const headers: HeadersInit = {
+        'Accept': 'application/ld+json',
+        'Content-Type': 'application/ld+json',
+        ...options.headers,
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(url, {
         ...options,
-        headers: {
-            'Accept': 'application/ld+json',
-            'Content-Type': 'application/ld+json',
-            ...options.headers,
-        },
+        headers,
         cache: 'no-store',
     });
 
