@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Open Sans"', 'sans-serif'],
-        headline: ['"Open Sans"', 'sans-serif'],
+        body: ['"Segoe UI"', '"Roboto"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        headline: ['"Segoe UI"', '"Roboto"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
