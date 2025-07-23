@@ -44,7 +44,8 @@ export default function LoginPage() {
             router.push('/');
         } catch (err) {
              setError(t('login_failed_error'));
-             setIsLoading(false);
+        } finally {
+            setIsLoading(false);
         }
     }
 
