@@ -31,7 +31,7 @@ interface HydraCollection<T> {
   'hydra:totalItems': number;
 }
 
-async function fetchFromApi<T>(url: string, options: RequestInit = {}): Promise<T> {
+async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<T> {
   try {
     const response = await fetch(url, {
         ...options,
@@ -63,7 +63,7 @@ async function fetchFromApi<T>(url: string, options: RequestInit = {}): Promise<
 // Production Line Endpoints
 export async function getProductionLines(): Promise<ProductionLine[]> {
     try {
-        const data = await fetchFromApi<HydraCollection<ProductionLine>>(URLS.ProductionLines.collection);
+        const data = await dataProvider<HydraCollection<ProductionLine>>(URLS.ProductionLines.collection);
         return data ? data['hydra:member'] : [];
     } catch (error) {
         return [];
@@ -71,25 +71,25 @@ export async function getProductionLines(): Promise<ProductionLine[]> {
 }
 
 export async function createProductionLine(lineData: Partial<ProductionLine>): Promise<ProductionLine> {
-    return fetchFromApi<ProductionLine>(URLS.ProductionLines.collection, {
+    return dataProvider<ProductionLine>(URLS.ProductionLines.collection, {
         method: 'POST',
         body: JSON.stringify(lineData),
     });
 }
 
 export async function getProductionLine(lineCode: string): Promise<ProductionLine> {
-    return fetchFromApi<ProductionLine>(URLS.ProductionLines.item(lineCode));
+    return dataProvider<ProductionLine>(URLS.ProductionLines.item(lineCode));
 }
 
 export async function updateProductionLine(lineCode: string, updateData: Partial<ProductionLine>): Promise<ProductionLine> {
-    return fetchFromApi<ProductionLine>(URLS.ProductionLines.item(lineCode), {
+    return dataProvider<ProductionLine>(URLS.ProductionLines.item(lineCode), {
         method: 'PATCH',
         body: JSON.stringify(updateData),
     });
 }
 
 export async function deleteProductionLine(lineCode: string): Promise<void> {
-    await fetchFromApi<void>(URLS.ProductionLines.item(lineCode), {
+    await dataProvider<void>(URLS.ProductionLines.item(lineCode), {
         method: 'DELETE',
     });
 }
@@ -98,7 +98,7 @@ export async function deleteProductionLine(lineCode: string): Promise<void> {
 // Product Endpoints
 export async function getProducts(): Promise<Product[]> {
     try {
-        const data = await fetchFromApi<HydraCollection<Product>>(URLS.Products.collection);
+        const data = await dataProvider<HydraCollection<Product>>(URLS.Products.collection);
         return data ? data['hydra:member'] : [];
     } catch (error) {
         return [];
@@ -106,25 +106,25 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function createProduct(productData: Partial<Product>): Promise<Product> {
-    return fetchFromApi<Product>(URLS.Products.collection, {
+    return dataProvider<Product>(URLS.Products.collection, {
         method: 'POST',
         body: JSON.stringify(productData),
     });
 }
 
 export async function getProduct(id: number): Promise<Product> {
-    return fetchFromApi<Product>(URLS.Products.item(id));
+    return dataProvider<Product>(URLS.Products.item(id));
 }
 
 export async function updateProduct(id: number, updateData: Partial<Product>): Promise<Product> {
-    return fetchFromApi<Product>(URLS.Products.item(id), {
+    return dataProvider<Product>(URLS.Products.item(id), {
         method: 'PATCH',
         body: JSON.stringify(updateData),
     });
 }
 
 export async function deleteProduct(id: number): Promise<void> {
-    await fetchFromApi<void>(URLS.Products.item(id), {
+    await dataProvider<void>(URLS.Products.item(id), {
         method: 'DELETE',
     });
 }
@@ -133,7 +133,7 @@ export async function deleteProduct(id: number): Promise<void> {
 // Problem Endpoints
 export async function getProblems(): Promise<Problem[]> {
     try {
-        const data = await fetchFromApi<HydraCollection<Problem>>(URLS.Problems.collection);
+        const data = await dataProvider<HydraCollection<Problem>>(URLS.Problems.collection);
         return data ? data['hydra:member'] : [];
     } catch (error) {
         return [];
@@ -141,25 +141,25 @@ export async function getProblems(): Promise<Problem[]> {
 }
 
 export async function createProblem(problemData: Partial<Problem>): Promise<Problem> {
-    return fetchFromApi<Problem>(URLS.Problems.collection, {
+    return dataProvider<Problem>(URLS.Problems.collection, {
         method: 'POST',
         body: JSON.stringify(problemData),
     });
 }
 
 export async function getProblem(id: number): Promise<Problem> {
-    return fetchFromApi<Problem>(URLS.Problems.item(id));
+    return dataProvider<Problem>(URLS.Problems.item(id));
 }
 
 export async function updateProblem(id: number, updateData: Partial<Problem>): Promise<Problem> {
-    return fetchFromApi<Problem>(URLS.Problems.item(id), {
+    return dataProvider<Problem>(URLS.Problems.item(id), {
         method: 'PATCH',
         body: JSON.stringify(updateData),
     });
 }
 
 export async function deleteProblem(id: number): Promise<void> {
-    await fetchFromApi<void>(URLS.Problems.item(id), {
+    await dataProvider<void>(URLS.Problems.item(id), {
         method: 'DELETE',
     });
 }
@@ -167,7 +167,7 @@ export async function deleteProblem(id: number): Promise<void> {
 // User Endpoints
 export async function getUsers(): Promise<User[]> {
     try {
-        const data = await fetchFromApi<HydraCollection<User>>(URLS.Users.collection);
+        const data = await dataProvider<HydraCollection<User>>(URLS.Users.collection);
         return data ? data['hydra:member'] : [];
     } catch (error) {
         return [];
@@ -175,25 +175,25 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function createUser(userData: Partial<User>): Promise<User> {
-    return fetchFromApi<User>(URLS.Users.collection, {
+    return dataProvider<User>(URLS.Users.collection, {
         method: 'POST',
         body: JSON.stringify(userData),
     });
 }
 
 export async function getUser(personalNumber: string): Promise<User> {
-    return fetchFromApi<User>(URLS.Users.item(personalNumber));
+    return dataProvider<User>(URLS.Users.item(personalNumber));
 }
 
 export async function updateUser(personalNumber: string, updateData: Partial<User>): Promise<User> {
-    return fetchFromApi<User>(URLS.Users.item(personalNumber), {
+    return dataProvider<User>(URLS.Users.item(personalNumber), {
         method: 'PATCH',
         body: JSON.stringify(updateData),
     });
 }
 
 export async function deleteUser(personalNumber: string): Promise<void> {
-    await fetchFromApi<void>(URLS.Users.item(personalNumber), {
+    await dataProvider<void>(URLS.Users.item(personalNumber), {
         method: 'DELETE',
     });
 }
@@ -202,7 +202,7 @@ export async function deleteUser(personalNumber: string): Promise<void> {
 // Shift Endpoints
 export async function getShifts(): Promise<Shift[]> {
     try {
-        const data = await fetchFromApi<HydraCollection<Shift>>(URLS.Shifts.collection);
+        const data = await dataProvider<HydraCollection<Shift>>(URLS.Shifts.collection);
         return data ? data['hydra:member'] : [];
     } catch (error) {
         return [];
@@ -210,7 +210,7 @@ export async function getShifts(): Promise<Shift[]> {
 }
 
 export async function createShift(shiftData: { productionLine: string; problem: string | null }): Promise<Shift> {
-    return fetchFromApi<Shift>(URLS.Shifts.collection, {
+    return dataProvider<Shift>(URLS.Shifts.collection, {
         method: 'POST',
         body: JSON.stringify(shiftData),
     });
@@ -218,21 +218,21 @@ export async function createShift(shiftData: { productionLine: string; problem: 
 
 export async function getShift(id: string): Promise<Shift | null> {
     try {
-        return await fetchFromApi<Shift>(URLS.Shifts.item(id));
+        return await dataProvider<Shift>(URLS.Shifts.item(id));
     } catch (error) {
         return null;
     }
 }
 
 export async function updateShift(id: string, updateData: Partial<Shift>): Promise<Shift> {
-    return fetchFromApi<Shift>(URLS.Shifts.item(id), {
+    return dataProvider<Shift>(URLS.Shifts.item(id), {
         method: 'PATCH',
         body: JSON.stringify(updateData),
     });
 }
 
 export async function deleteShift(id: string): Promise<void> {
-    await fetchFromApi<void>(URLS.Shifts.item(id), {
+    await dataProvider<void>(URLS.Shifts.item(id), {
         method: 'DELETE',
     });
 }
