@@ -86,10 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(INTENDED_DESTINATION_KEY);
     }
-    toast({ title: t('logoutSuccessTitle'), description: t('logoutSuccessDesc') });
     router.push('/login');
     setIsLoading(false);
-  }, [router, toast, t, clearAuthData]);
+  }, [router, clearAuthData]);
 
   const handleRenewalClose = useCallback(() => {
     logger.log('Session renewal modal closed by user. Logging out.');
@@ -278,12 +277,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       logger.error('Login failed.', error);
       clearAuthData();
+      if(error.isNetworkError) {
+          error.message = t('cors_error_desc');
+      }
       // Re-throw the error so the form can handle it
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [processSuccessfulLogin, router, clearAuthData]);
+  }, [processSuccessfulLogin, router, clearAuthData, t]);
 
 
   const fetchUser = useCallback(async () => {
@@ -359,5 +361,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-    
