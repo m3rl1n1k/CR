@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -19,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { ApiError } from '@/types';
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -36,16 +38,11 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            await login(personalNumber, password);
-            toast({
-                title: t('login_successful'),
-                description: t('redirecting_to_dashboard'),
-            });
-            router.push('/');
+            await login({ username: personalNumber, password });
+            // The redirect is handled by the auth hook.
         } catch (err: any) {
              setError(err.message || t('login_failed_error'));
-        } finally {
-            setIsLoading(false);
+             setIsLoading(false);
         }
     }
 
@@ -105,3 +102,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

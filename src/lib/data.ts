@@ -1,3 +1,4 @@
+
 export type ProductionLineStatus = "Running" | "Idle" | "Stopped";
 
 export interface ProductionLine {
@@ -59,6 +60,8 @@ export interface User {
     role: "Supervisor" | "Operator"; // from roles array
     email?: string;
     roles?: string[];
+    verifiedAt?: string | null; // Added for compatibility
+    isVerified?: boolean; // Added for compatibility
 }
 
 export interface Product {
@@ -67,3 +70,5 @@ export interface Product {
   code: string;
   productionLine?: string;
 }
+
+    

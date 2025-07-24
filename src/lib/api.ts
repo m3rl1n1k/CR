@@ -1,6 +1,7 @@
 
 import type { Problem, Product, ProductionLine, Shift, User } from './data';
 import { logger } from './logger';
+import { LoginResponse } from '@/types';
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80').replace(/\/$/, "");
 
@@ -37,7 +38,7 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
   try {
     logger.log(`Fetching URL: ${url}`);
     logger.log(`API call: ${options.method || 'GET'} ${url}`, options.body ? { body: options.body } : {});
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('production_insights_auth_token') : null;
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -56,8 +57,17 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
 
     if (!response.ok) {
       const errorText = await response.text();
+      let errorJson = {};
+      try {
+        errorJson = JSON.parse(errorText);
+      } catch (e) {
+        // not a json error
+      }
       logger.error(`API call to ${url} failed with status ${response.status}: ${errorText}`);
-      throw new Error(`API call failed: ${response.status} ${errorText}`);
+      const error: any = new Error(`API call failed: ${response.status}`);
+      error.response = response;
+      error.data = errorJson;
+      throw error;
     }
     
     if (response.status === 204) { // No Content
@@ -72,11 +82,22 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
   } catch (error) {
     logger.error(`Failed to fetch from ${url}`, error);
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      return Promise.reject(new Error('Network error or CORS issue. Please check server configuration and network.'));
+      const networkError: any = new Error('Network error or CORS issue. Please check server configuration and network.');
+      networkError.isNetworkError = true;
+      return Promise.reject(networkError);
     }
     return Promise.reject(error);
   }
 }
+
+// Auth Endpoint
+export async function login(personalNumber: string, password?: string): Promise<LoginResponse> {
+    return dataProvider<LoginResponse>(URLS.Auth, {
+        method: 'POST',
+        body: JSON.stringify({ personalNumber, password }),
+    });
+}
+
 
 // Production Line Endpoints
 export async function getProductionLines(): Promise<ProductionLine[]> {
