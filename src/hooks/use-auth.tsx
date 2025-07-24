@@ -253,8 +253,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response: LoginResponse = await apiLogin(credentials.username, credentials.password);
       logger.log('Login API call successful. Received token.');
       await processSuccessfulLogin(response.token);
-      toast({ title: t('login_successful'), description: t('redirecting_to_dashboard') });
-
+      
       let redirectTo = '/';
 
       if (typeof window !== 'undefined') {
@@ -277,28 +276,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logger.log(`Redirecting to ${redirectTo}`);
       router.push(redirectTo);
     } catch (error: any) {
-      const apiError = error as ApiError;
-      logger.error('Login failed.', apiError);
-      
-      let description = t('loginFailedDesc');
-      if (error.isNetworkError) {
-        description = t('cors_error_desc');
-      } else if (apiError.message) {
-        description = apiError.message;
-      }
-      
-      toast({
-        variant: "destructive",
-        title: t('loginFailedTitle'),
-        description,
-      });
+      logger.error('Login failed.', error);
       clearAuthData();
       // Re-throw the error so the form can handle it
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [processSuccessfulLogin, router, toast, t, clearAuthData]);
+  }, [processSuccessfulLogin, router, clearAuthData]);
 
 
   const fetchUser = useCallback(async () => {
@@ -374,3 +359,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    
