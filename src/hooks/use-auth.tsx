@@ -282,7 +282,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       let description = t('loginFailedDesc');
       if (error.isNetworkError) {
-        description = error.message;
+        description = t('cors_error_desc');
       } else if (apiError.message) {
         description = apiError.message;
       }
