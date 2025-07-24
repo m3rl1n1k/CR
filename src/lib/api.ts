@@ -71,6 +71,9 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
 
   } catch (error) {
     logger.error(`Failed to fetch from ${url}`, error);
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return Promise.reject(new Error('Network error or CORS issue. Please check server configuration and network.'));
+    }
     return Promise.reject(error);
   }
 }
