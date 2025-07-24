@@ -92,10 +92,28 @@ async function dataProvider<T>(url: string, options: RequestInit = {}): Promise<
 
 // Auth Endpoint
 export async function login(personalNumber: string, password?: string): Promise<LoginResponse> {
-    return dataProvider<LoginResponse>(URLS.Auth, {
-        method: 'POST',
-        body: JSON.stringify({ personalNumber, password }),
+    logger.log(`Attempting login for user: ${personalNumber}`);
+    const response = await fetch(URLS.Auth, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ personalNumber: personalNumber, password }),
     });
+
+    if (!response.ok) {
+        let errorData;
+        try {
+            errorData = await response.json();
+        } catch (e) {
+            errorData = { message: `Request failed with status ${response.status}` };
+        }
+        const error: any = new Error(errorData.message || 'Login failed');
+        error.data = errorData;
+        throw error;
+    }
+
+    return response.json();
 }
 
 
